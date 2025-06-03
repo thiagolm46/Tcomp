@@ -1,0 +1,16 @@
+AFD Determinizado
+Q: {A}, {B}, {QF_QI_S}, {S}, ∅
+Σ: 0, 1
+δ:
+{A}, 0 -> {B}
+{A}, 1 -> {S}
+{B}, 0 -> {A}
+{B}, 1 -> {B}
+{QF_QI_S}, 0 -> {S}
+{QF_QI_S}, 1 -> {A}
+{S}, 0 -> {S}
+{S}, 1 -> {A}
+∅, 0 -> ∅
+∅, 1 -> ∅
+{QF_QI_S}: inicial
+F: {QF_QI_S}, {S}

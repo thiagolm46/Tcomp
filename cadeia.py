@@ -15,7 +15,7 @@ if __name__ == "__main__":
     cadeia = input("Entrada fornecida: w = ").strip()
 
     # Carrega o AFD determinizado
-    afd = ler_afn_do_arquivo("AFD.txt")
+    afd = ler_afn_do_arquivo("./output/AFD.txt")
 
     # Simula a cadeia
     aceita = simular_cadeia(afd, cadeia)

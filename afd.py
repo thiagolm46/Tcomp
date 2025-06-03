@@ -34,7 +34,13 @@ def ler_afn_do_arquivo(caminho: str) -> Automato:
             esquerda = partes[0].strip()
             direita = partes[1].strip()
 
-            origem, simbolo = [x.strip() for x in esquerda.split(",")]
+            # Ajuste para nomes de estados com vírgula
+            origem = esquerda[:esquerda.rfind(",")].strip()
+            simbolo = esquerda[esquerda.rfind(",")+1:].strip()
+
+            # Interpreta 'ε' como vazio
+            if simbolo == 'ε':
+                simbolo = ""
 
             chave = (origem, simbolo)
             if chave not in transitions:
@@ -49,13 +55,28 @@ def ler_afn_do_arquivo(caminho: str) -> Automato:
 
     return Automato(states, alphabet, transitions, initial_state, final_states)
 
+def fechamento_epsilon(afn, estados):
+    """Retorna o conjunto de estados alcançáveis a partir de 'estados' via transições epsilon."""
+    pilha = list(estados)
+    resultado = set(estados)
+    while pilha:
+        estado = pilha.pop()
+        chave = (estado, "")
+        if chave in afn.transitions:
+            for destino in afn.transitions[chave]:
+                if destino not in resultado:
+                    resultado.add(destino)
+                    pilha.append(destino)
+    return resultado
 
 def determinizar_afn(afn: Automato) -> Automato:
     afd_states: Set[str] = set()
     afd_transitions: Dict[Tuple[str, str], List[str]] = {}
     afd_final_states: Set[str] = set()
 
-    initial_set = frozenset([afn.initial_state])
+    dead_state = "∅"
+    # Fechamento-epsilon do inicial
+    initial_set = frozenset(fechamento_epsilon(afn, [afn.initial_state]))
     estados_mapeados = {initial_set: nome_estado(initial_set)}
     fila = [initial_set]
 
@@ -69,24 +90,30 @@ def determinizar_afn(afn: Automato) -> Automato:
         nome_atual = nome_estado(atual)
 
         for simbolo in afn.alphabet:
+            if simbolo == "":
+                continue  # Não processa epsilon na determinização
             destino = set()
-
             for estado in atual:
                 chave = (estado, simbolo)
                 if chave in afn.transitions:
-                    destino.update(afn.transitions[chave])
-
+                    for prox in afn.transitions[chave]:
+                        destino.update(fechamento_epsilon(afn, [prox]))
             if destino:
                 nome_destino = nome_estado(frozenset(destino))
                 afd_transitions[(nome_atual, simbolo)] = [nome_destino]
-
                 if nome_destino not in afd_states:
                     afd_states.add(nome_destino)
                     fila.append(frozenset(destino))
-
                     if any(state in afn.final_states for state in destino):
                         afd_final_states.add(nome_destino)
-            # Se não há destino, não adiciona transição (não há estado morto)
+            else:
+                afd_transitions[(nome_atual, simbolo)] = [dead_state]
+
+    afd_states.add(dead_state)
+    for simbolo in afn.alphabet:
+        if simbolo == "":
+            continue
+        afd_transitions[(dead_state, simbolo)] = [dead_state]
 
     return Automato(
         states=afd_states,
@@ -97,8 +124,10 @@ def determinizar_afn(afn: Automato) -> Automato:
     )
 
 def nome_estado(estado_conjunto: frozenset) -> str:
+    if not estado_conjunto:
+        return "∅"
     elementos = sorted(estado_conjunto)
-    return "{" + ", ".join(elementos) + "}"
+    return "{" + "_".join(elementos) + "}"
 
 
 def salvar_afd_em_arquivo(afd: Automato, caminho: str):
@@ -117,8 +146,8 @@ def salvar_afd_em_arquivo(afd: Automato, caminho: str):
 
 # Execução principal
 if __name__ == "__main__":
-    caminho_afn = "AFN.txt"
-    caminho_afd = "AFD.txt"
+    caminho_afn = "./output/AFN.txt"
+    caminho_afd = "./output/AFD.txt"
 
     # Ler o AFN do arquivo
     afn = ler_afn_do_arquivo(caminho_afn)

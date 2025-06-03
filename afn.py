@@ -56,10 +56,11 @@ def ler_gramatica_do_arquivo(caminho: str) -> Tuple[Grammar, str]:
 
             regras_processadas = []
             for regra in regras:
-                if regra.strip() == '" "':
+                regra_limpa = regra.strip()
+                if regra_limpa in ['" "', 'ε', "'ε'", '"ε"']:
                     regras_processadas.append("")
                 else:
-                    regras_processadas.append(regra.strip())
+                    regras_processadas.append(regra_limpa)
 
             if nao_terminal not in productions:
                 productions[nao_terminal] = []
@@ -75,15 +76,15 @@ def convert_grammar_to_afn(grammar: Grammar) -> AFN:
     afn = AFN()
 
     afn.states = set(grammar.productions.keys())
-    final_state = "F"
+    final_state = "QF"
     afn.states.add(final_state)
-    afn.final_states.add(final_state)
+    afn.final_states = {final_state}
     afn.initial_state = grammar.start_symbol
 
     # Descobrir o alfabeto completo
     for rules in grammar.productions.values():
         for production in rules:
-            if production == "":
+            if production == "" or production == "ε":
                 continue
             symbol = production[0]
             afn.alphabet.add(symbol)
@@ -91,8 +92,9 @@ def convert_grammar_to_afn(grammar: Grammar) -> AFN:
     # Adicionar transições da gramática
     for non_terminal, rules in grammar.productions.items():
         for production in rules:
-            if production == "":
-                afn.final_states.add(non_terminal)
+            if production == "" or production == "ε":
+                # Adiciona transição epsilon para o estado final especial
+                afn.add_transition(non_terminal, "", final_state)
             elif len(production) == 1:
                 symbol = production
                 afn.add_transition(non_terminal, symbol, final_state)
@@ -138,9 +140,8 @@ def print_afn(afn: AFN):
             print(f"  {from_state} --{symbol}--> {to_state}")
 
 
-# 🔥 Execução Principal
 if __name__ == "__main__":
-    caminho_entrada = "gramatica.txt"
+    caminho_entrada = "g1.txt"
 
     # Ler gramática
     gramatica, cadeia = ler_gramatica_do_arquivo(caminho_entrada)
@@ -155,5 +156,5 @@ if __name__ == "__main__":
     print_afn(afn)
 
     # Salvar no arquivo
-    salvar_afn_em_arquivo(afn, "AFN.txt")
+    salvar_afn_em_arquivo(afn, "./output/AFN.txt")
     print("Arquivo 'AFN.txt' gerado com sucesso!")
