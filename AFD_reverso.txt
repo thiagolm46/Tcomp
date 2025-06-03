@@ -1,6 +1,0 @@
-AFD Determinizado
-Q: {QI}
-Σ: a, b
-δ:
-{QI}: inicial
-F: 
