@@ -2,6 +2,9 @@ from typing import Dict, List, Tuple, Set
 
 
 class Automato:
+    #classe que representa um autômato finito determinístico de forma geral
+    # Implementei mais de uma vez como forma de entender melhor a estrutura  
+
     def __init__(self, states: Set[str], alphabet: Set[str],
                  transitions: Dict[Tuple[str, str], List[str]],
                  initial_state: str, final_states: Set[str]):
@@ -12,6 +15,8 @@ class Automato:
         self.final_states = final_states
 
 
+#Lê um AFN a partir de um arquivo de texto formatado e retorna um objeto Automato.
+#Trata estados, alfabeto, transições (incluindo transições epsilon), estado inicial e finais. 
 def ler_afn_do_arquivo(caminho: str) -> Automato:
     with open(caminho, 'r', encoding='utf-8') as f:
         linhas = [linha.strip() for linha in f.readlines() if linha.strip() != ""]
@@ -55,8 +60,16 @@ def ler_afn_do_arquivo(caminho: str) -> Automato:
 
     return Automato(states, alphabet, transitions, initial_state, final_states)
 
+
 def fechamento_epsilon(afn, estados):
-    """Retorna o conjunto de estados alcançáveis a partir de 'estados' via transições epsilon."""
+    #    Calcula o ε-fechamento de um conjunto de estados.
+
+    # Para cada estado no conjunto fornecido, esta função descobre todos os estados
+    # que podem ser alcançados por transições epsilon (ε), ou seja, transições sem consumir
+    # nenhum símbolo da entrada.
+
+    # É usada para garantir que, ao processar o AFN, todos os caminhos possíveis por ε sejam
+    # considerados antes de ler o próximo símbolo — essencial na determinização.
     pilha = list(estados)
     resultado = set(estados)
     while pilha:
@@ -69,6 +82,8 @@ def fechamento_epsilon(afn, estados):
                     pilha.append(destino)
     return resultado
 
+#  Converte um AFN em um AFD usando o algoritmo de subconjuntos e ε-fechamento.
+#     Cria novos estados compostos por conjuntos de estados do AFN.
 def determinizar_afn(afn: Automato) -> Automato:
     afd_states: Set[str] = set()
     afd_transitions: Dict[Tuple[str, str], List[str]] = {}
@@ -123,6 +138,8 @@ def determinizar_afn(afn: Automato) -> Automato:
         final_states=afd_final_states
     )
 
+#  Cria um nome único para o conjunto de estados, útil para representar os novos estados do AFD.
+#     Exemplo: {q0,q1} vira "{q0_q1}"
 def nome_estado(estado_conjunto: frozenset) -> str:
     if not estado_conjunto:
         return "∅"

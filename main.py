@@ -17,7 +17,7 @@ def main():
     print("AFD gerado em AFD.txt")
 
     # 3. Fechamento: reverso e complemento
-    afd_reverso = reverter_afd(afn)  # O reverso deve ser feito sobre o AFN!
+    afd_reverso = reverter_afd(afn)
     salvar_afd_fechamento(afd_reverso, "./output/AFD_reverso.txt")
     print("AFD reverso gerado em AFD_reverso.txt")
 

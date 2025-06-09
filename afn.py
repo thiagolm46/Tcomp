@@ -2,12 +2,15 @@ from typing import Dict, List, Tuple, Set
 
 
 class Grammar:
+    # Representa uma gramática livre do lado direito
     def __init__(self, start_symbol: str, productions: Dict[str, List[str]]):
         self.start_symbol = start_symbol
         self.productions = productions
 
 
 class AFN:
+    # Representa um autômato finito não-determinístico
+    #Utilizando a definição formal de automato que é um 5-upla (Q, Σ, δ, q0, F)
     def __init__(self):
         self.states: Set[str] = set()
         self.alphabet: Set[str] = set()
@@ -21,8 +24,10 @@ class AFN:
             self.transitions[key] = []
         self.transitions[key].append(to_state)
 
-
+# Lê uma gramática e uma cadeia a ser testada a partir de um arquivo.
+# Retorna a gramática como objeto `Grammar` e a cadeia como string.
 def ler_gramatica_do_arquivo(caminho: str) -> Tuple[Grammar, str]:
+
     with open(caminho, 'r', encoding='utf-8') as f:
         linhas = [linha.strip() for linha in f.readlines() if linha.strip() != ""]
 
@@ -72,6 +77,9 @@ def ler_gramatica_do_arquivo(caminho: str) -> Tuple[Grammar, str]:
     gramatica = Grammar(start_symbol, productions)
     return gramatica, cadeia
 
+
+# Converte uma gramática regular em um autômato finito não-determinístico (AFN).
+# Cria um estado final especial 'QF' e adiciona transições com base nas produções.
 def convert_grammar_to_afn(grammar: Grammar) -> AFN:
     afn = AFN()
 
@@ -106,6 +114,7 @@ def convert_grammar_to_afn(grammar: Grammar) -> AFN:
 
     return afn
 
+#Formatação do arquivo de saída do AFN
 def salvar_afn_em_arquivo(afn: AFN, caminho: str):
     with open(caminho, 'w', encoding='utf-8') as f:
         f.write("AFN Original\n")
